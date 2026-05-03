@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: survey_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: survey_password
+      MYSQL_DATABASE: survey_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: survey_backend
+    environment:
+      DATABASE_URL: mysql+pymysql://root:survey_password@mysql:3306/survey_db
+      SECRET_KEY: change-this-to-a-secure-random-string
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app
+
+volumes:
+  mysql_data:
