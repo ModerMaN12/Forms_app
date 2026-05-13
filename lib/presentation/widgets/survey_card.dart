@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../data/models/survey_model.dart';
 
-class SurveyCardWidget extends StatelessWidget {
+class SurveyCardWidget extends ConsumerWidget {
   final SurveyModel survey;
   final VoidCallback onTap;
   final VoidCallback onTakeSurvey;
@@ -14,7 +16,8 @@ class SurveyCardWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(appLocalizationsProvider);
     return Card(
       child: InkWell(
         onTap: onTap,
@@ -27,19 +30,16 @@ class SurveyCardWidget extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      survey.title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+                    child: Text(survey.title, style: Theme.of(context).textTheme.titleLarge),
                   ),
                   if (survey.isActive)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: Colors.green.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text('Active', style: TextStyle(color: Colors.green, fontSize: 12)),
+                      child: Text(l10n.active, style: const TextStyle(color: Colors.green, fontSize: 12)),
                     ),
                 ],
               ),
@@ -56,11 +56,11 @@ class SurveyCardWidget extends StatelessWidget {
                 children: [
                   Icon(Icons.question_answer, size: 16, color: Colors.grey[500]),
                   const SizedBox(width: 4),
-                  Text('${survey.questions.length} questions', style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+                  Text('${survey.questions.length} ${l10n.questions}', style: TextStyle(color: Colors.grey[500], fontSize: 13)),
                   const SizedBox(width: 16),
                   Icon(Icons.people, size: 16, color: Colors.grey[500]),
                   const SizedBox(width: 4),
-                  Text('${survey.responseCount} responses', style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+                  Text('${survey.responseCount} ${l10n.responses}', style: TextStyle(color: Colors.grey[500], fontSize: 13)),
                 ],
               ),
             ],

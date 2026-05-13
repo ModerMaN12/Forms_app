@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../providers/local_survey_provider.dart';
 import '../../../data/models/local_survey.dart';
 
@@ -34,13 +35,14 @@ class _LocalResultsScreenState extends ConsumerState<LocalResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (_survey == null) return const Scaffold(body: Center(child: Text('Survey not found')));
+    if (_survey == null) return Scaffold(body: Center(child: Text(l10n.surveyNotFound)));
 
     final survey = _survey!;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Results: ${survey.title}')),
+      appBar: AppBar(title: Text('${l10n.results}: ${survey.title}')),
       body: survey.responses.isEmpty
           ? Center(
               child: Column(
@@ -48,7 +50,7 @@ class _LocalResultsScreenState extends ConsumerState<LocalResultsScreen> {
                 children: [
                   Icon(Icons.bar_chart, size: 64, color: Colors.grey[300]),
                   const SizedBox(height: 16),
-                  Text('No responses yet', style: TextStyle(color: Colors.grey[500], fontSize: 18)),
+                  Text(l10n.noResponsesYet, style: TextStyle(color: Colors.grey[500], fontSize: 18)),
                 ],
               ),
             )
@@ -65,14 +67,14 @@ class _LocalResultsScreenState extends ConsumerState<LocalResultsScreen> {
                           children: [
                             Text('${survey.responseCount}',
                                 style: Theme.of(context).textTheme.headlineLarge),
-                            const Text('Total Responses'),
+                            Text(l10n.totalResponses),
                           ],
                         ),
                         Column(
                           children: [
                             Text('${survey.questions.length}',
                                 style: Theme.of(context).textTheme.headlineLarge),
-                            const Text('Questions'),
+                            Text(l10n.questionsCap),
                           ],
                         ),
                       ],
@@ -94,7 +96,7 @@ class _LocalResultsScreenState extends ConsumerState<LocalResultsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(q.text, style: Theme.of(context).textTheme.titleMedium),
-                          Text('${answers.length} answers', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                          Text('${answers.length} ${l10n.answers}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                           const SizedBox(height: 12),
                           if (qType == 'single_choice' || qType == 'multiple_choice')
                             _buildBarChart(answers)
@@ -109,7 +111,7 @@ class _LocalResultsScreenState extends ConsumerState<LocalResultsScreen> {
                                   child: Text(a.toString()),
                                 ))
                           else if (qType == 'rating' || qType == 'scale')
-                            _buildRatingStats(answers),
+                            _buildRatingStats(answers, l10n),
                         ],
                       ),
                     ),
@@ -179,7 +181,7 @@ class _LocalResultsScreenState extends ConsumerState<LocalResultsScreen> {
     );
   }
 
-  Widget _buildRatingStats(List<dynamic> answers) {
+  Widget _buildRatingStats(List<dynamic> answers, l10n) {
     final nums = answers.map((a) => int.tryParse(a.toString())).whereType<int>().toList();
     if (nums.isEmpty) return const Text('No data');
 
@@ -191,7 +193,7 @@ class _LocalResultsScreenState extends ConsumerState<LocalResultsScreen> {
 
     return Column(
       children: [
-        Text('Average: ${avg.toStringAsFixed(2)}',
+        Text('${l10n.average} ${avg.toStringAsFixed(2)}',
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Wrap(
@@ -200,7 +202,7 @@ class _LocalResultsScreenState extends ConsumerState<LocalResultsScreen> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text('${e.key}: ${e.value}',

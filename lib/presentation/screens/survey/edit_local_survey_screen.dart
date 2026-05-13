@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/question_model.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../providers/local_survey_provider.dart';
 import '../../widgets/question_widgets/question_editor_widget.dart';
 
@@ -48,7 +49,7 @@ class _EditLocalSurveyScreenState extends ConsumerState<EditLocalSurveyScreen> {
     setState(() {
       _questions.add(
         QuestionModel(
-          text: 'New Question',
+          text: ref.read(appLocalizationsProvider).newQuestion,
           questionType: type,
           options: (type == QuestionType.singleChoice || type == QuestionType.multipleChoice)
               ? ['Option 1', 'Option 2']
@@ -91,6 +92,7 @@ class _EditLocalSurveyScreenState extends ConsumerState<EditLocalSurveyScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = ref.read(appLocalizationsProvider);
     final repo = ref.read(localSurveyRepositoryProvider);
     final survey = await repo.getById(widget.surveyId);
     if (survey == null) return;
@@ -100,16 +102,14 @@ class _EditLocalSurveyScreenState extends ConsumerState<EditLocalSurveyScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           icon: const Icon(Icons.warning, color: Colors.orange, size: 48),
-          title: const Text('Warning!'),
-          content: Text(
-            'This survey has ${survey.responseCount} response(s). Editing questions will delete all previous responses. Continue?',
-          ),
+          title: Text(l10n.warning),
+          content: Text(l10n.warningResponsesLocal.replaceAll('@count', survey.responseCount.toString())),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              child: const Text('Delete & Update', style: TextStyle(color: Colors.white)),
+              child: Text(l10n.deleteUpdate, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -121,7 +121,11 @@ class _EditLocalSurveyScreenState extends ConsumerState<EditLocalSurveyScreen> {
       id: widget.surveyId,
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
-      questions: _questions.map((q) => q.toJson()).toList(),
+      questions: _questions.map((q) {
+        final json = q.toJson();
+        json.remove('id');
+        return json;
+      }).toList(),
     );
     await ref.read(localSurveyProvider.notifier).loadSurveys();
     if (mounted) Navigator.pop(context);
@@ -129,10 +133,11 @@ class _EditLocalSurveyScreenState extends ConsumerState<EditLocalSurveyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Scaffold(appBar: AppBar(title: const Text('Edit Survey')), body: const Center(child: CircularProgressIndicator()));
+    final l10n = ref.watch(appLocalizationsProvider);
+    if (_loading) return Scaffold(appBar: AppBar(title: Text(l10n.editSurvey)), body: const Center(child: CircularProgressIndicator()));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Survey')),
+      appBar: AppBar(title: Text(l10n.editSurvey)),
       body: Form(
         key: _formKey,
         child: Column(
@@ -143,20 +148,20 @@ class _EditLocalSurveyScreenState extends ConsumerState<EditLocalSurveyScreen> {
                 children: [
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Survey Title'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: InputDecoration(labelText: l10n.surveyTitle),
+                    validator: (v) => v == null || v.isEmpty ? l10n.required : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(labelText: 'Description'),
+                    decoration: InputDecoration(labelText: l10n.surveyDescription),
                     maxLines: 2,
                   ),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Questions (${_questions.length})', style: Theme.of(context).textTheme.titleLarge),
+                      Text('${l10n.questionsCap} (${_questions.length})', style: Theme.of(context).textTheme.titleLarge),
                       PopupMenuButton<QuestionType>(
                         icon: const Icon(Icons.add_circle),
                         onSelected: _addQuestion,
@@ -193,7 +198,7 @@ class _EditLocalSurveyScreenState extends ConsumerState<EditLocalSurveyScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _save,
-                  child: const Text('Save Changes'),
+                  child: Text(l10n.saveChanges),
                 ),
               ),
             ),

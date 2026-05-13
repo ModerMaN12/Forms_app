@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/survey_model.dart';
 import '../../../data/models/question_model.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../providers/survey_provider.dart';
 import '../../widgets/question_widgets/question_editor_widget.dart';
 
@@ -41,7 +42,7 @@ class _EditSurveyScreenState extends ConsumerState<EditSurveyScreen> {
     setState(() {
       _questions.add(
         QuestionModel(
-          text: 'New Question',
+          text: ref.read(appLocalizationsProvider).newQuestion,
           questionType: type,
           options: (type == QuestionType.singleChoice || type == QuestionType.multipleChoice)
               ? ['Option 1', 'Option 2']
@@ -84,22 +85,21 @@ class _EditSurveyScreenState extends ConsumerState<EditSurveyScreen> {
 
   Future<void> _saveSurvey() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = ref.read(appLocalizationsProvider);
 
     if (widget.survey.responseCount > 0) {
       final confirm = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
           icon: const Icon(Icons.warning, color: Colors.orange, size: 48),
-          title: const Text('Warning!'),
-          content: const Text(
-            'This survey already has responses. Editing questions will DELETE all previous responses. Continue?',
-          ),
+          title: Text(l10n.warning),
+          content: Text(l10n.warningResponsesExist),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              child: const Text('Delete & Update', style: TextStyle(color: Colors.white)),
+              child: Text(l10n.deleteUpdate, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -127,8 +127,9 @@ class _EditSurveyScreenState extends ConsumerState<EditSurveyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     return Scaffold(
-      appBar: AppBar(title: Text('Edit: ${widget.survey.title}')),
+      appBar: AppBar(title: Text('${l10n.editSurvey}: ${widget.survey.title}')),
       body: Form(
         key: _formKey,
         child: Column(
@@ -139,7 +140,7 @@ class _EditSurveyScreenState extends ConsumerState<EditSurveyScreen> {
                 children: [
                   if (widget.survey.responseCount > 0)
                     Card(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       child: Padding(
                         padding: const EdgeInsets.all(12),
                         child: Row(
@@ -147,10 +148,7 @@ class _EditSurveyScreenState extends ConsumerState<EditSurveyScreen> {
                             const Icon(Icons.warning_amber, color: Colors.orange),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(
-                                'Has ${widget.survey.responseCount} responses. Changing questions will delete them.',
-                                style: const TextStyle(color: Colors.orange),
-                              ),
+                              child: Text('${l10n.warningResponsesExist}', style: const TextStyle(color: Colors.orange)),
                             ),
                           ],
                         ),
@@ -159,19 +157,19 @@ class _EditSurveyScreenState extends ConsumerState<EditSurveyScreen> {
                   if (widget.survey.responseCount > 0) const SizedBox(height: 12),
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Survey Title'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: InputDecoration(labelText: l10n.surveyTitle),
+                    validator: (v) => v == null || v.isEmpty ? l10n.required : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(labelText: 'Description'),
+                    decoration: InputDecoration(labelText: l10n.surveyDescription),
                     maxLines: 2,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<AccessType>(
                     initialValue: _accessType,
-                    decoration: const InputDecoration(labelText: 'Access Type'),
+                    decoration: InputDecoration(labelText: l10n.accessType),
                     items: AccessType.values.map((t) {
                       return DropdownMenuItem(value: t, child: Text(t.displayName));
                     }).toList(),
@@ -183,7 +181,7 @@ class _EditSurveyScreenState extends ConsumerState<EditSurveyScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Questions (${_questions.length})', style: Theme.of(context).textTheme.titleLarge),
+                      Text('${l10n.questionsCap} (${_questions.length})', style: Theme.of(context).textTheme.titleLarge),
                       PopupMenuButton<QuestionType>(
                         icon: const Icon(Icons.add_circle),
                         onSelected: _addQuestion,
@@ -214,13 +212,13 @@ class _EditSurveyScreenState extends ConsumerState<EditSurveyScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
               ),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _saveSurvey,
-                  child: const Text('Save Changes'),
+                  child: Text(l10n.saveChanges),
                 ),
               ),
             ),

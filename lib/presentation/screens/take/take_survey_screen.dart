@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/response_repository.dart';
 import '../../../data/repositories/providers.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../widgets/question_widgets/question_display_widget.dart';
 
 class TakeSurveyScreen extends ConsumerStatefulWidget {
@@ -46,20 +47,21 @@ class _TakeSurveyScreenState extends ConsumerState<TakeSurveyScreen> {
         answers: answers,
       );
       if (!mounted) return;
+      final l10n = ref.read(appLocalizationsProvider);
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
-          title: const Text('Thank You!'),
-          content: const Text('Your response has been submitted.'),
+          title: Text(l10n.thankYou),
+          content: Text(l10n.responseSubmitted),
           actions: [
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 Navigator.pop(context);
               },
-              child: const Text('Close'),
+              child: Text(l10n.close),
             ),
           ],
         ),
@@ -76,6 +78,7 @@ class _TakeSurveyScreenState extends ConsumerState<TakeSurveyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     return Scaffold(
       appBar: AppBar(title: Text(widget.surveyTitle)),
       body: Form(
@@ -91,9 +94,9 @@ class _TakeSurveyScreenState extends ConsumerState<TakeSurveyScreen> {
                       padding: const EdgeInsets.all(16),
                       child: TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Your name (optional)',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: l10n.yourNameOptional,
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                     ),
@@ -120,7 +123,7 @@ class _TakeSurveyScreenState extends ConsumerState<TakeSurveyScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
               ),
               child: SizedBox(
                 width: double.infinity,
@@ -128,7 +131,7 @@ class _TakeSurveyScreenState extends ConsumerState<TakeSurveyScreen> {
                   onPressed: _isLoading ? null : _submit,
                   child: _isLoading
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Submit'),
+                      : Text(l10n.submit),
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
+import '../../../core/localization/locale_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -42,9 +43,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     final authState = ref.watch(authProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
+      appBar: AppBar(title: Text(l10n.registerTitle)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -56,33 +58,33 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                    prefixIcon: Icon(Icons.person),
+                  decoration: InputDecoration(
+                    labelText: l10n.name,
+                    prefixIcon: const Icon(Icons.person),
                   ),
-                  validator: (v) => v == null || v.isEmpty ? 'Enter name' : null,
+                  validator: (v) => v == null || v.isEmpty ? l10n.nameHint : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
+                  decoration: InputDecoration(
+                    labelText: l10n.email,
+                    prefixIcon: const Icon(Icons.email),
                   ),
-                  validator: (v) => v == null || v.isEmpty ? 'Enter email' : null,
+                  validator: (v) => v == null || v.isEmpty ? l10n.emailHint : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: Icon(Icons.lock),
+                  decoration: InputDecoration(
+                    labelText: l10n.password,
+                    prefixIcon: const Icon(Icons.lock),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Enter password';
-                    if (v.length < 6) return 'Min 6 characters';
+                    if (v == null || v.isEmpty) return l10n.passwordHint;
+                    if (v.length < 6) return l10n.minPasswordLength;
                     return null;
                   },
                 ),
@@ -91,7 +93,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   onPressed: authState.isLoading ? null : _register,
                   child: authState.isLoading
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Register'),
+                      : Text(l10n.register),
                 ),
               ],
             ),

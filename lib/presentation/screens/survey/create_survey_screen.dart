@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/survey_model.dart';
 import '../../../data/models/question_model.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../providers/survey_provider.dart';
 import '../../widgets/question_widgets/question_editor_widget.dart';
 
@@ -30,7 +31,7 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
     setState(() {
       _questions.add(
         QuestionModel(
-          text: 'New Question',
+          text: ref.read(appLocalizationsProvider).newQuestion,
           questionType: type,
           options: (type == QuestionType.singleChoice || type == QuestionType.multipleChoice)
               ? ['Option 1', 'Option 2']
@@ -42,9 +43,7 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
   }
 
   void _updateQuestion(int index, QuestionModel question) {
-    setState(() {
-      _questions[index] = question;
-    });
+    setState(() => _questions[index] = question);
   }
 
   void _removeQuestion(int index) {
@@ -75,9 +74,10 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
 
   Future<void> _saveSurvey() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = ref.read(appLocalizationsProvider);
     if (_questions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add at least one question')),
+        SnackBar(content: Text(l10n.addAtLeastOne)),
       );
       return;
     }
@@ -105,8 +105,9 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Survey')),
+      appBar: AppBar(title: Text(l10n.createSurvey)),
       body: Form(
         key: _formKey,
         child: Column(
@@ -117,19 +118,19 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
                 children: [
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Survey Title'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: InputDecoration(labelText: l10n.surveyTitle),
+                    validator: (v) => v == null || v.isEmpty ? l10n.required : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(labelText: 'Description'),
+                    decoration: InputDecoration(labelText: l10n.surveyDescription),
                     maxLines: 2,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<AccessType>(
                     initialValue: _accessType,
-                    decoration: const InputDecoration(labelText: 'Access Type'),
+                    decoration: InputDecoration(labelText: l10n.accessType),
                     items: AccessType.values.map((t) {
                       return DropdownMenuItem(value: t, child: Text(t.displayName));
                     }).toList(),
@@ -141,10 +142,10 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Questions', style: Theme.of(context).textTheme.titleLarge),
+                      Text(l10n.questionsCap, style: Theme.of(context).textTheme.titleLarge),
                       PopupMenuButton<QuestionType>(
                         icon: const Icon(Icons.add_circle),
-                        tooltip: 'Add question',
+                        tooltip: l10n.addQuestion,
                         onSelected: _addQuestion,
                         itemBuilder: (_) => QuestionType.values.map((t) {
                           return PopupMenuItem(value: t, child: Text(t.displayName));
@@ -170,10 +171,7 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 32),
-                        child: Text(
-                          'Tap + to add questions',
-                          style: TextStyle(color: Colors.grey[500]),
-                        ),
+                        child: Text(l10n.addQuestion, style: TextStyle(color: Colors.grey[500])),
                       ),
                     ),
                 ],
@@ -183,13 +181,13 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
               ),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _saveSurvey,
-                  child: const Text('Create Survey'),
+                  child: Text(l10n.createSurveyBtn),
                 ),
               ),
             ),

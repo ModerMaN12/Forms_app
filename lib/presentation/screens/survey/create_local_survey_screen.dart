@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/question_model.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../providers/local_survey_provider.dart';
 import '../../widgets/question_widgets/question_editor_widget.dart';
 
@@ -28,7 +29,7 @@ class _CreateLocalSurveyScreenState extends ConsumerState<CreateLocalSurveyScree
     setState(() {
       _questions.add(
         QuestionModel(
-          text: 'New Question',
+          text: ref.read(appLocalizationsProvider).newQuestion,
           questionType: type,
           options: (type == QuestionType.singleChoice || type == QuestionType.multipleChoice)
               ? ['Option 1', 'Option 2']
@@ -71,9 +72,10 @@ class _CreateLocalSurveyScreenState extends ConsumerState<CreateLocalSurveyScree
 
   Future<void> _saveSurvey() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = ref.read(appLocalizationsProvider);
     if (_questions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add at least one question')),
+        SnackBar(content: Text(l10n.addAtLeastOne)),
       );
       return;
     }
@@ -100,8 +102,9 @@ class _CreateLocalSurveyScreenState extends ConsumerState<CreateLocalSurveyScree
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Local Survey')),
+      appBar: AppBar(title: Text(l10n.createLocalSurvey)),
       body: Form(
         key: _formKey,
         child: Column(
@@ -112,23 +115,23 @@ class _CreateLocalSurveyScreenState extends ConsumerState<CreateLocalSurveyScree
                 children: [
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Survey Title'),
-                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                    decoration: InputDecoration(labelText: l10n.surveyTitle),
+                    validator: (v) => v == null || v.isEmpty ? l10n.required : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(labelText: 'Description'),
+                    decoration: InputDecoration(labelText: l10n.surveyDescription),
                     maxLines: 2,
                   ),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Questions', style: Theme.of(context).textTheme.titleLarge),
+                      Text(l10n.questionsCap, style: Theme.of(context).textTheme.titleLarge),
                       PopupMenuButton<QuestionType>(
                         icon: const Icon(Icons.add_circle),
-                        tooltip: 'Add question',
+                        tooltip: l10n.addQuestion,
                         onSelected: _addQuestion,
                         itemBuilder: (_) => QuestionType.values.map((t) {
                           return PopupMenuItem(value: t, child: Text(t.displayName));
@@ -154,7 +157,7 @@ class _CreateLocalSurveyScreenState extends ConsumerState<CreateLocalSurveyScree
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 32),
-                        child: Text('Tap + to add questions', style: TextStyle(color: Colors.grey[500])),
+                        child: Text(l10n.addQuestion, style: TextStyle(color: Colors.grey[500])),
                       ),
                     ),
                 ],
@@ -170,7 +173,7 @@ class _CreateLocalSurveyScreenState extends ConsumerState<CreateLocalSurveyScree
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _saveSurvey,
-                  child: const Text('Create Survey (Offline)'),
+                  child: Text(l10n.createSurveyOffline),
                 ),
               ),
             ),

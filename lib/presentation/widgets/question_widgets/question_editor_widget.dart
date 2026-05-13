@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/question_model.dart';
+import '../../../core/localization/locale_provider.dart';
 
-class QuestionEditorWidget extends StatefulWidget {
+class QuestionEditorWidget extends ConsumerStatefulWidget {
   final QuestionModel question;
   final int index;
   final int totalQuestions;
@@ -20,10 +22,10 @@ class QuestionEditorWidget extends StatefulWidget {
   });
 
   @override
-  State<QuestionEditorWidget> createState() => _QuestionEditorWidgetState();
+  ConsumerState<QuestionEditorWidget> createState() => _QuestionEditorWidgetState();
 }
 
-class _QuestionEditorWidgetState extends State<QuestionEditorWidget> {
+class _QuestionEditorWidgetState extends ConsumerState<QuestionEditorWidget> {
   late TextEditingController _textController;
   late List<TextEditingController> _optionControllers;
 
@@ -54,7 +56,8 @@ class _QuestionEditorWidgetState extends State<QuestionEditorWidget> {
   }
 
   void _addOption() {
-    final newOptions = List<String>.from(widget.question.options ?? [])..add('Option ${_optionControllers.length + 1}');
+    final l10n = ref.read(appLocalizationsProvider);
+    final newOptions = List<String>.from(widget.question.options ?? [])..add('${l10n.option} ${_optionControllers.length + 1}');
     setState(() {
       _optionControllers.add(TextEditingController(text: newOptions.last));
     });
@@ -73,8 +76,20 @@ class _QuestionEditorWidgetState extends State<QuestionEditorWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     final needsOptions = widget.question.questionType == QuestionType.singleChoice ||
         widget.question.questionType == QuestionType.multipleChoice;
+
+    String typeName(String type) {
+      switch (type) {
+        case 'single_choice': return l10n.singleChoice;
+        case 'multiple_choice': return l10n.multipleChoice;
+        case 'text': return l10n.textQuestion;
+        case 'rating': return l10n.rating;
+        case 'scale': return l10n.scale;
+        default: return type;
+      }
+    }
 
     return Card(
       child: ExpansionTile(
@@ -86,7 +101,7 @@ class _QuestionEditorWidgetState extends State<QuestionEditorWidget> {
           style: Theme.of(context).textTheme.titleMedium,
           onChanged: _updateText,
         ),
-        subtitle: Text(widget.question.questionType.displayName,
+        subtitle: Text(typeName(widget.question.questionType.value),
             style: TextStyle(color: Colors.grey[600], fontSize: 12)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -144,7 +159,7 @@ class _QuestionEditorWidgetState extends State<QuestionEditorWidget> {
                   TextButton.icon(
                     onPressed: _addOption,
                     icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Add option'),
+                    label: Text(l10n.addOption),
                   ),
                 ],
               ),

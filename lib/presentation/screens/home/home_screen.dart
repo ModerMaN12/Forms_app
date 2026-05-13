@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/survey_provider.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../survey/create_survey_screen.dart';
 import '../survey/survey_detail_screen.dart';
 import '../profile/profile_screen.dart';
@@ -25,6 +26,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     final surveyState = ref.watch(surveyProvider);
 
     return Scaffold(
@@ -41,15 +43,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (i) => setState(() => _currentIndex = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.poll), label: 'Surveys'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.poll), label: l10n.surveys),
+          NavigationDestination(icon: const Icon(Icons.person), label: l10n.profile),
         ],
       ),
     );
   }
 
   Widget _buildSurveysList(surveyState) {
+    final l10n = ref.watch(appLocalizationsProvider);
+
     if (surveyState.isLoading && surveyState.surveys.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -63,7 +67,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => ref.read(surveyProvider.notifier).loadSurveys(),
-              child: const Text('Retry'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -77,9 +81,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Icon(Icons.create, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            Text('No surveys yet', style: Theme.of(context).textTheme.titleLarge),
+            Text(l10n.noSurveysYet, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            const Text('Tap + to create your first survey'),
+            Text(l10n.createFirstSurvey),
           ],
         ),
       );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
+import '../../../core/localization/locale_provider.dart';
 import 'register_screen.dart';
 import '../home/local_home_screen.dart';
 
@@ -41,6 +42,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     final authState = ref.watch(authProvider);
     return Scaffold(
       body: SafeArea(
@@ -55,7 +57,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Icon(Icons.poll, size: 80, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(height: 16),
                 Text(
-                  'Survey App',
+                  l10n.appName,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
@@ -63,21 +65,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
+                  decoration: InputDecoration(
+                    labelText: l10n.email,
+                    prefixIcon: const Icon(Icons.email),
                   ),
-                  validator: (v) => v == null || v.isEmpty ? 'Enter email' : null,
+                  validator: (v) => v == null || v.isEmpty ? l10n.emailHint : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: Icon(Icons.lock),
+                  decoration: InputDecoration(
+                    labelText: l10n.password,
+                    prefixIcon: const Icon(Icons.lock),
                   ),
-                  validator: (v) => v == null || v.isEmpty ? 'Enter password' : null,
+                  validator: (v) => v == null || v.isEmpty ? l10n.passwordHint : null,
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(
@@ -88,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   child: authState.isLoading
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Login'),
+                      : Text(l10n.login),
                 ),
                 const SizedBox(height: 12),
                 TextButton(
@@ -96,18 +98,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     context,
                     MaterialPageRoute(builder: (_) => const RegisterScreen()),
                   ),
-                  child: const Text('Don\'t have an account? Register'),
+                  child: Text(l10n.noAccount),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Row(
                     children: [
-                      Expanded(child: Divider()),
+                      const Expanded(child: Divider()),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('or', style: TextStyle(color: Colors.grey)),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(l10n.or, style: const TextStyle(color: Colors.grey)),
                       ),
-                      Expanded(child: Divider()),
+                      const Expanded(child: Divider()),
                     ],
                   ),
                 ),
@@ -119,10 +121,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     );
                   },
                   icon: const Icon(Icons.wifi_off),
-                  label: const Text('Continue Offline'),
+                  label: Text(l10n.continueOffline),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: Theme.of(context).colorScheme.primary),
                   ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('${l10n.language}: ', style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(width: 8),
+                    SegmentedButton<Locale>(
+                      segments: [
+                        ButtonSegment(value: const Locale('en'), label: Text(l10n.english)),
+                        ButtonSegment(value: const Locale('ru'), label: Text(l10n.russian)),
+                      ],
+                      selected: {ref.watch(localeProvider)},
+                      onSelectionChanged: (set) {
+                        ref.read(localeProvider.notifier).setLocale(set.first);
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),

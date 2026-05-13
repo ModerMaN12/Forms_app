@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../providers/results_provider.dart';
 
 class ResultsScreen extends ConsumerStatefulWidget {
@@ -22,10 +23,11 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(appLocalizationsProvider);
     final state = ref.watch(resultsProvider(widget.surveyId));
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.surveyTitle)),
+      appBar: AppBar(title: Text(l10n.results)),
       body: state.isLoading && state.results == null
           ? const Center(child: CircularProgressIndicator())
           : state.error != null && state.results == null
@@ -37,13 +39,13 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => ref.read(resultsProvider(widget.surveyId).notifier).loadResults(widget.surveyId),
-                        child: const Text('Retry'),
+                        child: Text(l10n.retry),
                       ),
                     ],
                   ),
                 )
               : state.results == null
-                  ? const Center(child: Text('No data'))
+                  ? Center(child: Text(l10n.noData))
                   : ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
@@ -57,14 +59,14 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                                   children: [
                                     Text('${state.results!.totalResponses}',
                                         style: Theme.of(context).textTheme.headlineLarge),
-                                    const Text('Total Responses'),
+                                    Text(l10n.totalResponses),
                                   ],
                                 ),
                                 Column(
                                   children: [
                                     Text('${state.results!.questionStats.length}',
                                         style: Theme.of(context).textTheme.headlineLarge),
-                                    const Text('Questions'),
+                                    Text(l10n.questionsCap),
                                   ],
                                 ),
                               ],
@@ -79,6 +81,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   }
 
   Widget _buildQuestionStat(BuildContext context, qs) {
+    final l10n = ref.watch(appLocalizationsProvider);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -86,7 +89,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(qs.questionText, style: Theme.of(context).textTheme.titleMedium),
-            Text('${qs.totalAnswers} answers', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+            Text('${qs.totalAnswers} ${l10n.answers}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
             const SizedBox(height: 12),
             if (qs.choiceCounts.isNotEmpty) _buildBarChart(qs),
             if (qs.ratingAvg != null) _buildRatingDisplay(qs),
@@ -127,8 +130,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                   final idx = val.toInt();
                   if (idx < 0 || idx >= qs.choiceCounts.keys.length) return const Text('');
                   final key = qs.choiceCounts.keys.elementAt(idx);
-                  return Text(key.length > 6 ? '${key.substring(0, 6)}...' : key,
-                      style: const TextStyle(fontSize: 10));
+                  return Text(key.length > 6 ? '${key.substring(0, 6)}...' : key, style: const TextStyle(fontSize: 10));
                 },
               ),
             ),
@@ -143,16 +145,17 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   }
 
   Widget _buildRatingDisplay(qs) {
+    final l10n = ref.watch(appLocalizationsProvider);
     return Column(
       children: [
-        Text('Average: ${qs.ratingAvg}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        Text('${l10n.average} ${qs.ratingAvg}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           children: qs.ratingDistribution.entries.map((e) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
               child: Text('${e.key}: ${e.value}'),
             );
           }).toList(),
